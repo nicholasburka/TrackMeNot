@@ -13,7 +13,7 @@
     You should have received a copy of the GNU General Public License
     along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
  ********************************************************************************/
-"use strict";
+"use strict"; //Firefox
 
 var api;
 if (chrome == undefined) {
@@ -43,15 +43,15 @@ TRACKMENOT.TMNSearch = function() {
     var burstTimeout = 6000;
     var burstCount = 0;
     
-    var tmn_options = {};
-    var TMNReq = {};
+    var tmn_options = {}; 
+    var TMNReq = {}; //Firefox only here, but both use this construction
     var currentUrlMap;
-    var tmn_searchTimer = null;
-    var tmn_logged_id = 0;
-    var tmn_mode = 'timed';
-    var tmn_errTimeout = null;
-    var tmn_scheduledSearch = false;
-    var tmn_hasloaded = false;
+    var tmn_searchTimer = null; //timer used in scheduleNextSearch function
+    var tmn_logged_id = 0; //don't know, replaced by something that is === to it
+    var tmn_mode = 'timed'; //3 vals, timed, burst, and recovery (after failed search)
+    var tmn_errTimeout = null; //set to 3 * delay in scheduleNextSearch
+    var tmn_scheduledSearch = false; //more complex construction around re-scheduling searches using reschedule()
+    var tmn_hasloaded = false; 
     var currentTMNURL = '';
     
     var tmn_options= {};
@@ -75,6 +75,9 @@ TRACKMENOT.TMNSearch = function() {
         /<more>/, /Travel/, /Personals/, /Local/, /Trademarks/,
         /cache/i, /similar/i, /login/i, /mail/i, /feed/i
     );
+
+
+    //utils
     
      function trim(s) {
         return s.replace(/\n/g, '');
@@ -220,22 +223,6 @@ TRACKMENOT.TMNSearch = function() {
             deleteTab();
         }
     }									
-						  
-															
-						  
-	 
-
-						  
-									  
-  
-												
-								 
-				   
-						
-				
-						
-		 
-	 
 
     function getTMNTab() {
         debug("Trying to access to the tab: " + tmn_tab_id);
@@ -271,9 +258,11 @@ TRACKMENOT.TMNSearch = function() {
     }
 
     function initTab(tab,pendingRequest) {
-        tmn_tab_id = tab.id;
+        tmn_tab_id = tab.id; 
+        //firefox only - next two lines
 		api.storage.local.set({"tab_id":tmn_tab_id});
         cout( "pending request: " + JSON.stringify(pendingRequest));
+        //
         if (pendingRequest!== null) {
             console.log(JSON.stringify(pendingRequest));
             api.tabs.sendMessage( tmn_tab_id, pendingRequest);
@@ -289,9 +278,11 @@ TRACKMENOT.TMNSearch = function() {
 
 
     function monitorBurst() {
+        //listens to every commitment navigation event
         api.webNavigation.onCommitted.addListener(function(e) {
             var url = e.url;
             var tab_id = e.tabId;
+            //checks if the event url corresponds to an implemented search engine
             var result = checkForSearchUrl(url);
             if (!result) {
                 if (tab_id === tmn_tab_id) {
@@ -314,6 +305,7 @@ TRACKMENOT.TMNSearch = function() {
                 if (engine && engine.urlmap !== asearch) {
                     engine.urlmap = asearch;
                     api.storage.local.set({'engines_tmn':tmn_engines});
+                    //log search
                     var logEntry = createLog('URLmap', eng, null, null, null, asearch)
                     log(logEntry);
                     debug("Updated url fr search engine " + eng + ", new url is " + asearch);
@@ -385,6 +377,7 @@ TRACKMENOT.TMNSearch = function() {
     }
 
 
+    //unclear at a glance if these actually need to be different between implementations
     function extractQueries(html) {
         var forbiddenChar = new RegExp("^[ @#<>\"\\\/,;'?{}:?%|\^~`=]", "g");
         var splitRegExp = new RegExp('^[\\[\\]\\(\\)\\"\']', "g");
@@ -526,8 +519,7 @@ TRACKMENOT.TMNSearch = function() {
 
         return 1;
     }
-
-
+1
     function readDHSList() {
         TMNQueries.dhs = [];
         var i = 0;
